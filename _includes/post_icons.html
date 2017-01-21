@@ -1,0 +1,9 @@
+<div class="spacing">
+  <div class="card">
+    <img class="card-img-top img-fluid" src="{{ post.photo_url }}" alt="{{ post.title }}">
+    <div class="card-block">
+      <h4 class="card-title"><a href="{{ post.url }}">{{ post.title }}</a></h4>
+      <p class="card-text text-fluid">{{ post.excerpt | remove: '<!--' | remove: '-->' }}</p>
+    </div>
+  </div>
+</div>

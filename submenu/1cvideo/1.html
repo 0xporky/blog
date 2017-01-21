@@ -1,0 +1,59 @@
+---
+layout: default
+id: 1
+---
+<div class="container">
+
+{% assign position = 1 %}
+{% assign lp = 0 %}
+{% assign min_pagg = 6 %}
+{% assign max_pagg = 11 %}
+
+{% assign net_p = max_pagg | plus: 1 %}
+
+{% for post in site.posts %}
+  {% if post.tag == "1cvideo" and lp <= max_pagg and lp >= min_pagg %}
+    {% if position == 1 %}
+      <div class="row">
+        <div class="col-sm-1">
+        </div>
+        <div class="col-sm-5">
+          {% include post_icons.html %}
+        </div>
+        {% assign position = 2 %}
+    {% else %}
+        <div class="col-sm-5"> 
+          {% include post_icons.html %}
+        </div>
+        <div class"col-sm-1">
+        </div>
+      </div>
+      {% assign position = 1 %}
+    {% endif %}
+  {% endif %}
+
+  {% if post.tag == "1cvideo" %}
+    {% assign lp = lp | plus: 1 %}
+  {% endif %}
+{% endfor %}
+
+{% if position == 2 %}
+  <div class="col-sm-5">
+  </div>
+</div>
+{% endif %}
+
+<nav class="spacing">
+   <ul class="pagination justify-content-center pagination-lg">
+     <li class="page-item">
+       <a class="page-link" href="/submenu/1cvideo.html">Previous</a>
+     </li>
+     {% if lp > next_p %}
+     <li class="page-item">
+       <a class="page-link" href="/submenu/1cvideo/2.html">Next</a>
+     </li>
+   {% endif %}
+   </ul>
+</nav>
+
+</div>

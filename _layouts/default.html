@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/css/bootstrap.css" rel="stylesheet">
+  <link href="/css/styles.css" rel="stylesheet">
+  <link href="/css/whhg.css" rel="stylesheet">
+  <body>
+    <nav class="navbar navbar-inverse bg-inverse navbar-fixed-top">
+      <ul class="nav nav-pills justify-content-center">
+        <li class="nav-item">
+          <a class="nav-link{% if page.id == 0 %} active{% endif %}" href="/index.html">
+            <i class="icon-home"></i>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link{% if page.id == 1 %} active{% endif %}"  href="/submenu/1cvideo.html">
+            <i class="icon-camera"></i>
+            ВИДЕО 1С
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link{% if page.id == 2 %} active{% endif %}" href="/submenu/1carticle.html">
+            <i class="icon-bookthree"></i>
+            СТАТЬИ 1С
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link{% if page.id == 3 %} active{% endif %}"  href="/submenu/author.html">
+            <i class="icon-user"></i>
+            О АВТОРЕ
+          </a>
+        </li>
+      </ul>
+    </nav>
+    {{ content }}
+  </body>
+</html>
