@@ -56,12 +56,12 @@ RUN ln -s -f /bin/true /usr/bin/chfn</code></pre>
         <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/zamena_parolya.png" class="img-fluid" alt="Строка установки пароля для блока аутентификации Zato">
       </div>
       <p class="text-fluid">Следующий шаг – нам необходимо задать «SOAP outgoing connection». Это нужно для того, чтобы Zato знал куда ходить за данными, как выполнять подключение к источнику данных, какой логин и пароль вводить и т.д. Переходим по пункту меню Connections – Outgoing – SOAP.</p>
-      <div class="center">
+      <div class="text-center">
         <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/soap_outgoing.png" class="img-fluid" alt="Пункт меню SOAP Outgoing Connection">
       </div>
       <p class="text-fluid">На странице выполним команду «Create a new SOAP outgoing connection» и заполним форму следующим образом.</p>
       <div class="text-center">
-        <img src="/images/2015-05i-01-kak-vydat-1s-zamuzh-za-zato-esb/outgoing_soap_connection.png" class="img-fluid" alt="Окно настройки SOAP Outgoing Connection">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/outgoing_soap_connection.png" class="img-fluid" alt="Окно настройки SOAP Outgoing Connection">
       </div>
       <p class="text-fluid">Host – путь к 1С веб-сервису. URL Path – имя веб-сервиса который мы будем использовать. Data format – соответственно формат данных в котором веб-сервис будет отдавать данные в Zato. Security definition – это тот Security Definition который мы создавали в самом начале главы. Serialization type – необходимо установить в Suds. Если все прошло успешно – мы получим утвердительное сообщение.</p>
       <p class="text-fluid">Следующий шаг – установка сервиса. Сервис – это скрипт на языке Python, который будет заниматься обработкой наших данных и при необходимости сохранять их в Redis. Для создания нового сервиса необходимо выполнить команду Services – List Services.</p>
