@@ -10,3 +10,11 @@
 .col-sm-5 {
     background-color: #f4f1f1;
 }
+
+.navbar {
+    border-bottom: 1em solid #fff;
+}
+
+.alert-info {
+    border: 1em;
+}

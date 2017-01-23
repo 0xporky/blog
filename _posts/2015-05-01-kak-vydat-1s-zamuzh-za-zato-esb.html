@@ -1,0 +1,119 @@
+---
+layout: default
+tag: 1carticle
+title: Как выдать 1С замуж за Zato ESB.
+photo_url: /images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/head.png
+excerpt_separator: <!--more-->
+---
+<!--Пример интеграции ZATO ESB и 1С.-->
+<!--more-->
+<div class="container">
+
+  <div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-10">
+      <h2><p class="text-center text-uppercase">Как выдать 1С замуж за Zato ESB</p></h2>
+    </div>
+    <div class="col-sm-1"></div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-10">
+      <p class="text-fluid">Организации, в которых мы работаем, очень часто растут. С ростом организации увеличивается и количество людей, которые в ней работают, увеличивается и IT-стек (в котором есть кнопка «Бабло»). Все чаще в отдел разработки попадают задачи по интеграции 1С из другими системами, будь то телефония, мобильные приложения, корпоративные порталы или датчики контроля использования туалетной бумаги. Весь зоопарк должен работать быстро, а администрирование и обслуживание не должно занимать много времени. Я веду тому, что рано или поздно мы придем к ESB. Ранее <a href="https://plus.google.com/116720578704525529319">+Валентин Будкин</a> уже написал замечательную статью о том, что такое Zato, настоятельно рекомендую заинтересованных людей ознакомится. В этой статье, мы с вами попробуем немного попрактиковаться: развернуть ПО с помощью docker’а, создать интерфейс, с помощью которого будем получать данные из 1С, кэшировать данные в Redis, валидировать кэш. Ну и я постараюсь рассказать о тех подводных камнях, на которые наткнулся сам.</p>
+      <div class="alert alert-info" role="alert"><p class="text-uppercase"><h3>КАК РАЗВЕРНУТЬ КОНТЕЙНЕР ИЗ ZATO</h3></p></div>
+      <p class="text-fluid">Первое что нам необходимо сделать – найти компьютер из Linux (можно использовать виртуальную машину) и установить на нем docker. Детально как провести установку zato из под докера описано на сайте производителя. Я же хочу отметить, что установить под Ubuntu 14.04.02 (Desktop) так и не удалось, пришлось сделать отдельный образ Ubuntu и внести изменения в докер-файл(в самом начале добавлены строчки):</p>
+      <pre><code>FROM sequenceiq/pam:ubuntu-14.04
+RUN ln -s -f /bin/true /usr/bin/chfn</code></pre>
+      <p class="text-fluid">После внесения изменений в файл, можно свободно запускать наш «image» (выполнение команд из инструкции). После запуска контейнера мы сможем подключиться к нашей шине с помощью браузера.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/pervyy_zapusk.png" class="img-fluid" alt="Административная панель Zato">
+        </div>
+      <div class="alert alert-info" role="alert"><p class="text-uppercase"><h3>ПОДГОТОВКА ВЕБ-СЕРВИСА В 1С</h3></p></div>
+      <p class="text-fluid">Пока забудем не на много о Zato. Задавайте создадим интерфейс коммуникации с внешним миром для 1С. Для решения нашей задачи я выбрал механизм веб-сервисов, это быстро, надежно и Zato умеет работать из SOAP. В нашем интерфейсе будет один метод – getPartnerBalance, который возвращает задолженность партнера по его идентификатору.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/xdto.png" class="img-fluid" alt="Структура XDTO пакета для работы из Zato ESB">
+      </div>
+      <p class="text-fluid">В объекте PartnerBalanceMetaData будет возвращаться служебная информация (тег Meta свойства Code, ErrorType, ErrorMessage), и данные для работы из внешнего сервиса (тег Data, свойства PartnerID, Balance). Также необходимо не забыть указать уникальное URI пространства имен (в нашем случае http://www.avtomat.biz/partner_balance).</p>
+      <p class="text-fluid">Теперь перейдем к созданию самого веб-сервиса. У нас будет один метод, который возвращает данные о балансе партнера в валюте управленческого учета. Выглядеть он будет примерно так:</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/veb_servis.png" class="img-fluid" alt="Веб-сервис для передачи данных в Zato по протоколу SOAP">
+      </div>
+      <p class="text-fluid">Определим код нашего веб-сервиса.</p>
+      <script src="https://gist.github.com/0xporky/700752ae1b8402e34541c56490056769.js"></script>
+      <p class="text-fluid">Перед выполнением запроса мы должны проверить входной параметр и соответствующим образом сформировать ответ для Zato. Как видно из кода, мы формируем обыкновенный XML-ответ на запрос.</p>
+      <div class="alert alert-info" role="alert"><p class="text-uppercase"><h3>КОНФИГУРИРОВАНИЕ ZATO ДЛЯ РАБОТЫ ИЗ 1C</h3></p></div>
+      <p class="text-fluid">Для начала нам необходимо задать параметры аутентификации, с помощью которых мы будем подключатся к 1С. Запускаем наш веб-интерфейс, и идем по пункту меню Security – HTTP Basic Auth.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/autentiifkaciya.png" class="img-fluid" alt="Создание блока для аутентификации в 1С из Zato">
+      </div>
+      <p class="text-fluid">В открывшемся окне выполняем команду «Create a new HTTP Basic Auth definition», после чего заполняем окно как на рисунку ниже.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/okno_autentifikacii.png" class="img-fluid" alt="Окно настройки параметров аутентификации в 1С для Zato">
+      </div>
+      <p class="text-fluid">Username – это наш логин пользователя для подключения к 1С, в которого установлены роли для запуска методов веб-сервиса. Пароль мы должны уже задать из списка полей.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/zamena_parolya.png" class="img-fluid" alt="Строка установки пароля для блока аутентификации Zato">
+      </div>
+      <p class="text-fluid">Следующий шаг – нам необходимо задать «SOAP outgoing connection». Это нужно для того, чтобы Zato знал куда ходить за данными, как выполнять подключение к источнику данных, какой логин и пароль вводить и т.д. Переходим по пункту меню Connections – Outgoing – SOAP.</p>
+      <div class="center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/soap_outgoing.png" class="img-fluid" alt="Пункт меню SOAP Outgoing Connection">
+      </div>
+      <p class="text-fluid">На странице выполним команду «Create a new SOAP outgoing connection» и заполним форму следующим образом.</p>
+      <div class="text-center">
+        <img src="/images/2015-05i-01-kak-vydat-1s-zamuzh-za-zato-esb/outgoing_soap_connection.png" class="img-fluid" alt="Окно настройки SOAP Outgoing Connection">
+      </div>
+      <p class="text-fluid">Host – путь к 1С веб-сервису. URL Path – имя веб-сервиса который мы будем использовать. Data format – соответственно формат данных в котором веб-сервис будет отдавать данные в Zato. Security definition – это тот Security Definition который мы создавали в самом начале главы. Serialization type – необходимо установить в Suds. Если все прошло успешно – мы получим утвердительное сообщение.</p>
+      <p class="text-fluid">Следующий шаг – установка сервиса. Сервис – это скрипт на языке Python, который будет заниматься обработкой наших данных и при необходимости сохранять их в Redis. Для создания нового сервиса необходимо выполнить команду Services – List Services.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/service_list.png" class="img-fluid" alt="Пункт меню запуска списка сервисов Zato">
+      </div>
+      <p class="text-fluid">Нам необходимо создать скрипт на Python, для последующей загрузки его как сервиса, с помощью кнопки «Upload a service package». Напишем следующий код.</p>
+      <script src="https://gist.github.com/0xporky/ae9900069e6a2ca079751ebf080f2c46.js"></script>
+      <p class="text-fluid">Для начала нам необходимо подключить класс для работы из Zato – Service. Также определим переменную-шаблон REDIS_KEY для формирования ключа для Redis. Класс GetBalance должен быть унаследованным от класса Service. Конструкция self.request.payload содержит в себе параметры POST запроса который будет приходит из вне(интерфейс для него мы добавим несколько позже). С помощью строки self.kvdb.conn.get мы получаем данные из Redis по ключу. Если данные сохранены в базе – смело отдаем их и прекращаем работу. Если же данных нету – мы подключаемся к 1С и вызываем процедуру getPartnerBalance нашего веб-сервиса. В случае возврата кода 200 из 1С, мы записываем данные в Redis и устанавливаем время жизни объекта 30 секунд (для тестового примера) и возвращаем данные клиенту.</p>
+      <p class="text-fluid">Сейчас мы определим интерфейс, который будет отдавать баланс партнера из Zato. Переходим в пункт Connections – Channels – Plain HTTP.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/channels.png" class="img-fluid" alt="Вызов и создание канала подключения к веб-сервису 1С">
+      </div>
+      <p class="text-fluid">На открывшейся странице выполняем команду «Create a new Plain HTTP channel» и заполняем параметры как в примере.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/channels_plaing_http.png" class="img-fluid" alt="Форма настройки параметров канала для подключения к веб-сервису 1С">
+      </div>
+      <p class="text-fluid">Name - имя канала. URL path - ссылка по которой можно будем запустить наш сервис. Data format - мы будем получать данные в формате JSON. Service - сервис (наш предыдущий файлик на python) с помощью которого выполняется обработка данных. Security definition - пока не устанавливаем, пример ведь тестовый.</p>
+      <p class="text-fluid">Теперь давайте попробуем протестировать то, что у нас получилось. Я буду использовать Advanced REST Client – дополнение к браузеру Chrom. Запрос будет выглядеть следующим образом.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/post_zapros.png" class="img-fluid" alt="POST запрос к сервису ZATO для получения баланса партнера">
+      </div>
+      <p class="text-fluid">После нажатия кнопки Send, мы получим ответ.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/otvet.png" class="img-fluid" alt="Ответ от сервера Zato из балансом партнера">
+      </div>
+      <p class="text-fluid">Если мы захотим проверить, что сохранилось в Redis, то увидим – данные сохранились.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/data_in_redis.png" class="img-fluid" alt="Кэш в Redis">
+      </div>
+      <p class="text-fluid">После истечения 30 секунд (как в примере скрипта было описано), данные кэша сбросятся.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/redis_cache_invalid.png" class="img-fluid" alt="Пустой кэш в Redis">
+      </div>
+      <p class="text-fluid">Если мы проанализируем время отклика – данные из кэша получаются примерно в 4 раза быстрее чем из 1С.</p>
+      <div class="alert alert-info" role="alert"><p class="text-uppercase"><h3>ВАЛИДАЦИЯ КЭША ZATO</h3></p></div>
+      <p class="text-fluid">Припустим, что в базе на партнера менеджер провел финансовый документ, но сервис получил данные о балансе партнера на несколько минут ранее. В таком случае нам необходимо обновить кэш уже из 1С, например во время подписки на проведение документа. Давайте сейчас попробуем организовать запись в Zato по событию из 1С.</p>
+      <p class="text-fluid">Для начала – напишем простой сервис, который будет принимать ID партнера, и его баланс, а потом выполнять запись в кэш. Код будет выглядеть следующим образом.</p>
+      <script src="https://gist.github.com/0xporky/c17c27d32c94f6cec3ec780007733be5.js"></script>
+      <p class="text-fluid">Загрузим наш сервис в Zato и перейдем к конфигурации каналов. Создадим как и в прошлом примере простой Plain HTTP Chanel. Примерные настройки будут как на картинке.</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/update_balance.png" class="img-fluid" alt="Канал для обновления кэша в Zato">
+      </div>
+      <p class="text-fluid">Теперь мы сможем написать 1С код, который обновляет баланс партнера через POST – запрос к шине при необходимости.</p>
+      <script src="https://gist.github.com/0xporky/4d0da17c66965a33363495da701ab87b.js"></script>
+      <p class="text-fluid">Если мы подключим код к выполнению проведения документа, получим следующий результат (проверим кэш еще раз).</p>
+      <div class="text-center">
+        <img src="/images/2015-05-01-kak-vydat-1s-zamuzh-za-zato-esb/data_in_redis_1.png" class="img-fluid" alt="Кэш в Redis">
+      </div>
+      <p class="text-fluid">Что же сказать напоследок? Мы совсем недавно начали использовать Zato в своем стэке, но механизм очень удобен и появилось очень много задач по интеграции из 1С. Посмотрим конечно, будет ли все нормально работать, если нагрузка на систему возрастет, но пока что все предельно ясно и понятно.</p>
+    </div>
+    <div class="col-sm-1"></div>
+  </div>
+
+</div>
