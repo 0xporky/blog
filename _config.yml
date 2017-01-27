@@ -1,4 +1,6 @@
-paginate: 5
+gems: [jekyll-paginate]
+
+paginate: 6
 
 exclude:
   - Gemfile

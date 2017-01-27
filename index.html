@@ -5,10 +5,8 @@ id: 0
 <div class="container">
 
 {% assign position = 1 %}
-{% assign lp = 0 %}
 
-{% for post in site.posts %}
-  {% if lp <= 9 %}
+{% for post in paginator.posts %}
     {% if position == 1 %}
       <div class="row">
         <div class="col-sm-1">
@@ -26,15 +24,36 @@ id: 0
       </div>
       {% assign position = 1 %}
     {% endif %}
-  {% endif %}
 
-  {% assign lp = lp | plus: 1 %}
 {% endfor %}
 
 {% if position == 2 %}
   <div class="col-sm-5">
   </div>
+  <div class="col-sm-1">
+  </div>
 </div>
 {% endif %}
 
 </div>
+
+<nav class="spacing">
+  <ul class="pagination justify-content-center pagination-lg">
+
+{% if paginator.previous_page %}
+
+    <li class="page-item">
+      <a class="page-link" href="{{ paginator.previous_page_path }}">Previous</a>
+    </li>
+
+{% endif %}
+
+{% if paginator.next_page %}
+
+    <li class="page-item">
+      <a class="page-link" href="{{ paginator.next_page_path }}">Next</a>
+    </li>
+
+{% endif %}
+  </ul>
+</nav>
