@@ -1,0 +1,83 @@
+---
+layout: default
+tag: 1carticle
+title: Автоматическая интеграция внешних обработок в конфигурацию 1C.
+photo_url: /images/2014-11-02-avtomaticheskaya-integraciya-vneshnih-obrabotok-v-konfiguraciyu-1c/head.png
+excerpt_separator: <!--more-->
+---
+<!--Задумка следующая: у нас исходники хранятся на bitbucket, значит нужно интегрировать его из Jenkins, чтобы когда мы делали merge ветки develop в master, CI подхватывал все это добро и самостоятельно подключал к базе..-->
+<!--more-->
+<div class="container">
+
+  <div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-10">
+      <h2><p class="text-center text-uppercase">Автоматическая интеграция внешних обработок в конфигурацию 1C</p></h2>
+    </div>
+    <div class="col-sm-1"></div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-10">
+      <p class="text-fluid">Вот уже некоторое время мы ведем разработку через git-flow. Все очень нравится. Но есть один момент - когда выходит релиз и ветка develop мигрирует в ветку master, очень лень подключать новые внешние обработки к базе вручную. Вот поэтому я решил продолжить занятие сексом из Jenkins и другими штуками для СІ. Проект у нас еще не внедрен, но вот хотелось бы выложить свои мысли в блоге, авось кто прочтет и даст совет.</p>
+      <p class="text-fluid">Итак, что нам нужно:</p>
+      <ul>
+        <li>Конфигурация на БСП.</li>
+        <li>Jenkins который выведен «наружу».</li>
+        <li>Python.</li>
+        <li>Три или четыре кружки кофе(шутка).</li>
+      </ul>
+    <p class="text-fluid">Задумка следующая: у нас исходники хранятся на bitbucket, значит нужно интегрировать его из Jenkins, чтобы когда мы делали merge ветки develop в master, CI подхватывал все это добро и самостоятельно подключал к базе.</p>
+    <div class="alert alert-info" role="alert"><p class="text-uppercase"><h3>ШАГ 1. ОБРАБОТКА-ИНТЕГРАТОР НА 1С.</h3></p></div>
+    <p class="text-fluid">Данная обработка вызывается CI в пакетном режиме. Как параметр запуска передается список полных путей к файлам которые нужно подключить к базе. Многие штуки (интеграция из чатом Slack, подключение внешней обработки/отчета) у нас уже интегрированы в конфигурацию. Обработка парсит параметры запуска и подключает файлики к базе. После подключения приходит сообщение в корпоративный чат о результатах. Если обработки еще нет в базе – ее необходимо подключить вручную. Вот небольшие фрагменты кода.</p>
+    <p class="text-fluid">Код который парсит параметры запуска и помещает файлы во временное хранилище.</p>
+    <script src="https://gist.github.com/0xporky/eb096ec6715ee602590dbdac420ef619.js"></script>
+    <p class="text-fluid">Здесь также происходит заполнение служебных структур и массив (МассивАдресов, МассивОшибок) для последующей обработки данных.</p>
+    <p class="text-fluid">А вто код, который подключает обработки к базе с помощтью функционала БСП.</p>
+    <script src="https://gist.github.com/0xporky/3b6fbc639ab67f51ff3b04785a35de7c.js"></script>
+    <p class="text-fluid">В коде сразу генерируются служебные сообщения, которые потом будут выведены в корпоративный чатик.</p>
+    <div class="alert alert-info" role="alert"><p class="text-uppercase"><h3>ШАГ 2. СКРИПТ НА PYTHON.</h3></p></div> 
+    <p class="text-fluid">Идея скрипта состоит в том, чтобы через команду git diff сравнить локальный master и master удаленный, а файлы которые изменились – записать в базу. Скрипт состоит из нескольких логических блоков. Первый блок делает пресловутый git diff и получает список измененных файлов.</p>
+    <script src="https://gist.github.com/0xporky/c138e83827f2f0a9c380cb0eb86301a9.js"></script>
+    <p class="text-fluid">Участок кода который запускает 1С в пакетном режиме и передает на вход обработки из шага №1 список измененных файлов.</p>
+    <script src="https://gist.github.com/0xporky/f734b5f140f3e97681ccf7a0ca3d8658.js"></script>
+    <p class="text-fluid">В скрипте есть еще некоторые служебные процедуры, но в рамках данной статьи приводить их не будем.</p>
+    <div class="alert alert-info" role="alert"><p class="text-uppercase"><h3>ШАГ 3. КОНФИГУРИРУЕМ JENKINS.</h3></p></div> 
+    <p class="text-fluid">Перейдем к самому вкусному - конфигурированию нашего job-а. Для начала укажем репозиторий откуда тянем изменения.</p>
+    <div class="text-center">
+      <img src="/images/2014-11-02-avtomaticheskaya-integraciya-vneshnih-obrabotok-v-konfiguraciyu-1c/repozitoriy.png" class="img-fluid" alt="Удаленный репозиторий в Jenkins">
+    </div> 
+    <p class="text-fluid">Далее необходимо указать что удаленный мастер будет копироваться в локальную ветку localmaster (в конце мы делаем merge).</p>
+    <div class="text-center">
+      <img src="/images/2014-11-02-avtomaticheskaya-integraciya-vneshnih-obrabotok-v-konfiguraciyu-1c/vetka.png" class="img-fluid" alt="Настройки клонирования веток в Jenkins">
+    </div> 
+    <p class="text-fluid">Следующая настройка – самая важная для интеграции из bitbucket, а именно – генерирование токена аутентификации. Он нам нужен чтобы bitbucket мог запускать jobs на нашем CI удаленно. Токен должен быть сверхсекретным ;)</p>
+    <div class="text-center">
+      <img src="/images/2014-11-02-avtomaticheskaya-integraciya-vneshnih-obrabotok-v-konfiguraciyu-1c/token.png" class="img-fluid" alt="Создание Authentication Token в Jenkins">
+    </div> 
+    <p class="text-fluid">Ну и следующая настройка – непосредственный вызов скрипта через пункт Execute Windows batch command.</p>
+   <div class="text-center">
+      <img src="/images/2014-11-02-avtomaticheskaya-integraciya-vneshnih-obrabotok-v-konfiguraciyu-1c/vyzov_skripta.png" class="img-fluid" alt="Вызов скрипта">
+    </div> 
+    <div class="alert alert-info" role="alert"><p class="text-uppercase"><h3>ШАГ 4. НАСТРОЙКИ BITBUCKET HOOK.</h3></p></div> 
+    <p class="text-fluid">Чтобы bitbucket мог дергать наш CI нам нужно настроить так называемый Jenkins Hook. Перейдем в настройки репозитория в раздел Integrations подраздел Hooks. В меню Select a hook выберем пункт Jenkins.</p>
+    <div class="text-center">
+      <img src="/images/2014-11-02-avtomaticheskaya-integraciya-vneshnih-obrabotok-v-konfiguraciyu-1c/hook.png" class="img-fluid" alt="Настройка Jenkins hook">
+    </div> 
+    <p class="text-fluid">Нам нужно заполнить всего три поля. Endpoint – сюда пишем адрес нашего CI сервера в формате http|s://username:password@domain:port/path, где username - User ID, а password - API Token. Посмотреть данные настройки можно если пойти в меню People, далее выбрать пользователя и открыть секцию API Token из настроек.</p>
+    <div class="text-center">
+      <img src="/images/2014-11-02-avtomaticheskaya-integraciya-vneshnih-obrabotok-v-konfiguraciyu-1c/apitoken.png" class="img-fluid" alt="Просмотр Api Token">
+    </div> 
+    <p class="text-fluid">Project name – имя проекта, который мы выбрали в Jenkins. Здесь нужно заметить, что имена job-ам нужно стараться давать без пробелов, а если у вас установлен плагин для каталогов в списке проектов, путь к проекту будет выглядеть так Auto_deploy/job/Auto_deploy_test, где Auto_deploy – имя каталога, Auto_deploy_test – имя проекта.</p>
+    <p class="text-fluid">Поле Token содержит наш токен аутентификации, который мы сгенерировали на шаге №3.</p>
+    <p class="text-fluid">Вот собственно и все. Результаты работы будут примерно таковы</p>
+    <div class="text-center">
+      <img src="/images/2014-11-02-avtomaticheskaya-integraciya-vneshnih-obrabotok-v-konfiguraciyu-1c/rezultaty.png" class="img-fluid" alt="Результаты работы">
+    </div> 
+    <p class="text-fluid">В подхода есть некоторые недостатки, а именно, Jenkins при каждом комите будет проверять наши ветки на изменения, что наверное затратно по производительности. С другой стороны процесс переноса наработок в продакшен хоть немного, но стает автоматическим.</p>
+    </div>
+    <div class="col-sm-1"></div>
+  </div>
+
+</div>
