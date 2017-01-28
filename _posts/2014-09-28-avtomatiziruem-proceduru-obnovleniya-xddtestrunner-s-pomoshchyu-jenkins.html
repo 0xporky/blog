@@ -1,0 +1,51 @@
+---
+layout: default
+tag: 1carticle
+title: Автоматизируем процедуру обновления xddTestRunner с помощью Jenkins.
+photo_url: /images/2014-09-28-avtomatiziruem-proceduru-obnovleniya-xddtestrunner-s-pomoshchyu-jenkins/head.png
+excerpt_separator: <!--more-->
+---
+<!--Вот я и решил немного автоматизировать процесс обновления обработки xddTestRunner.epf.-->
+<!--more-->
+<div class="container">
+
+  <div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-10">
+      <h2><p class="text-center text-uppercase">Автоматизируем процедуру обновления xddTestRunner с помощью Jenkins</p></h2>
+    </div>
+    <div class="col-sm-1"></div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-10">
+      <p class="text-fluid">Вот уже на протяжении нескольких недель наша команда пытается внедрить CI в процесс разработки программного обеспечения. Все пишут тесты, матерятся, снова пишут, ну одним словом все идет своим чередом, как у всех.</p>
+      <p class="text-fluid">Для тестирования мы используем замечательный open source инструмент xUnitFor1C. Он позволяет запускать тесты не только интерактивно, но и в пакетном режиме, заблаговременно сохраняя результаты в xml – файл который понимает плагин JUnit для Jekins. Все бы ничего, но разработка в проекте идет настолько активно, что редко успеваешь вовремя обновляться, то ли из-за большой лени, то ли из-за большого потока текучки. Вот я и решил немного автоматизировать процесс обновления обработки xddTestRunner.epf. Ну а чего, Jekins умный, пускай сам о себе позаботится.</p>
+      <p class"text-fluid">Для успешного выполнения задания нам понадобятся следующие инструменты: непосредственно сам Jekins (предварительно сконфигурированный для работы с git), и установленный Python версии 3.4 и выше. Наш план таков:</p>
+     <div class="text-center">
+        <img src="/images/2014-09-28-avtomatiziruem-proceduru-obnovleniya-xddtestrunner-s-pomoshchyu-jenkins/shemaraboty.png" class="img-fluid" alt="Схема автооновления">
+     </div>
+     <p class="text-fluid">Jenkins получает новые файлы из репозитория. После их получения специальный скрипт на python сравнивает уже существующий файл и новый. Если есть различия – свежая версия xddTestRunner подменяет старую, а пользователям в slack-чат отправляется уведомление об обновлении файла из ссылкой на новую версию.</p>
+     <p class="text-fluid">Давайте посмотрим на настройки Jenkins. Здесь ничего особенного. В разделе Source Code Managment установлена ссылка на репозиторий и ветка, которую будем загружать.</p>
+    <div class="text-center">
+        <img src="/images/2014-09-28-avtomatiziruem-proceduru-obnovleniya-xddtestrunner-s-pomoshchyu-jenkins/nastroykajenkins1.jpg" class="img-fluid" alt="Настройки раздела «Source Code Managment»">
+     </div>
+    <p class="text-fluid">Следующий раздел, который нам необходимо заполнить – Build. В нем мы должны заполнить секцию Execute Windows batch command, где будем запускать наш скрип сравнения файлов.</p>
+    <div class="text-center">
+        <img src="/images/2014-09-28-avtomatiziruem-proceduru-obnovleniya-xddtestrunner-s-pomoshchyu-jenkins/nastroykijenkins2.png" class="img-fluid" alt="Настройка раздела «Build»">
+     </div>
+    <p class="text-fluid">Настройка Jenkins окончена. Давайте рассмотрим наш скрипт, который будет сравнивать, подменять файлы и отправлять сообщения в slack.</p>
+    <p class="text-fluid">Первая важная функция – отправка оповещения в чат. Взял я ее отсюда. Приведем листинг кода.</p>
+    <script src="https://gist.github.com/0xporky/5b1fd15aad2414331eeac5df9de7f075.js"></script>
+    <p class="text-fluid">Процедура сравнения файлов и копирования файлов – совсем простая задача.</p>
+    <script src="https://gist.github.com/0xporky/c3889ee5414b488d37c38e8d4b227983.js"></script>
+    <p class="test-fluid">В результате мы получаем вот такое симпатичное сообщение.</p>
+    <div class="text-center">
+      <img src="/images/2014-09-28-avtomatiziruem-proceduru-obnovleniya-xddtestrunner-s-pomoshchyu-jenkins/soobshchenieslack.png" class="img-fluid" alt="Сообщение в slack-чате">
+    </div>
+    </div>
+    <div class="col-sm-1"></div>
+  </div>
+
+</div>
