@@ -1,16 +1,12 @@
 ---
 layout: default
-id: 1
+id: 0
 ---
 <div class="container">
 
 {% assign position = 1 %}
-{% assign lp = 0 %}
-{% assign min_pagg = 0 %}
-{% assign max_pagg = 5 %}
 
-{% for post in site.posts %}
-  {% if post.tag == "1cvideo" and lp <= max_pagg and lp >= min_pagg %}
+{% for post in paginator.posts %}
     {% if position == 1 %}
       <div class="row">
         <div class="col-sm-1">
@@ -28,27 +24,36 @@ id: 1
       </div>
       {% assign position = 1 %}
     {% endif %}
-  {% endif %}
 
-  {% if post.tag == "1cvideo" %}
-    {% assign lp = lp | plus: 1 %}
-  {% endif %}
 {% endfor %}
 
 {% if position == 2 %}
   <div class="col-sm-5">
   </div>
+  <div class="col-sm-1">
+  </div>
 </div>
 {% endif %}
 
-{% if lp > max_pagg %}
-  <nav class="spacing">
-    <ul class="pagination justify-content-center pagination-lg">
-      <li class="page-item">
-        <a class="page-link" href="/submenu/1cvideo/1.html">Next</a>
-      </li>
-    </ul>
-  </nav>
+</div>
+
+<nav class="spacing">
+  <ul class="pagination justify-content-center pagination-lg">
+
+{% if paginator.previous_page %}
+
+    <li class="page-item">
+      <a class="page-link" href="{{ paginator.previous_page_path }}">Previous</a>
+    </li>
+
 {% endif %}
 
-</div>
+{% if paginator.next_page %}
+
+    <li class="page-item">
+      <a class="page-link" href="{{ paginator.next_page_path }}">Next</a>
+    </li>
+
+{% endif %}
+  </ul>
+</nav>
