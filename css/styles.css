@@ -4,17 +4,36 @@
 
 .card {
     border: 0em;
-    background-color: #f4f1f1;
+    /*background-color: #f4f1f1;*/
 }
 
-.col-sm-5 {
+/*.col-sm-5 {
     background-color: #f4f1f1;
+}*/
+
+.darker {
+    background-color: #e5e5e5;
 }
 
-.navbar {
+.lightter {
+    background-color: #f1f1f1;
+}
+
+.mynavbar {
     border-bottom: 1em solid #fff;
 }
 
 .alert-info {
     border: 1em;
 }
+
+.bd-footer {
+    padding: 1em 0;
+    font-size: 70%;
+    background-color: #f4f1f1;
+}
+
+.text-muted {
+    color: #636c72!important;
+}
+

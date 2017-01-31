@@ -5,30 +5,40 @@ id: 0
 <div class="container">
 
 {% assign position = 1 %}
+{% assign left = true %}
 
 {% for post in paginator.posts %}
     {% if position == 1 %}
       <div class="row">
         <div class="col-sm-1">
         </div>
-        <div class="col-sm-5">
-          {% include post_icons.html %}
+        <div class="col-sm-5 {% if left == true %}lightter{% else %}darker{% endif %}">
+          {% if left == true %}
+            {% include post_icons_lightter.html %}
+          {% else %}
+            {% include post_icons_darker.html %}
+          {% endif %}
         </div>
         {% assign position = 2 %}
     {% else %}
-        <div class="col-sm-5"> 
-          {% include post_icons.html %}
+        <div class="col-sm-5 {% if left == true %}darker{% else %}lightter{% endif %}"> 
+          {% if left == true %}
+             {% include post_icons_darker.html %}
+          {% else %}
+            {% include post_icons_lightter.html %}
+          {% endif %}
         </div>
         <div class"col-sm-1">
         </div>
       </div>
+      {% if left == true %} {% assign left = false %} {% else %} {% assign left = true %} {% endif %}
       {% assign position = 1 %}
     {% endif %}
 
 {% endfor %}
 
 {% if position == 2 %}
-  <div class="col-sm-5">
+  <div class="col-sm-5 {% if left == true %}lightter{% else %}darker{% endif %}">
   </div>
   <div class="col-sm-1">
   </div>
