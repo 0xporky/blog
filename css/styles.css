@@ -1,15 +1,15 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
 .spacing {
   padding: 1em;
 }
 
 .card {
     border: 0em;
-    /*background-color: #f4f1f1;*/
 }
-
-/*.col-sm-5 {
-    background-color: #f4f1f1;
-}*/
 
 .darker {
     background-color: #e5e5e5;
@@ -27,10 +27,15 @@
     border: 1em;
 }
 
+.content {
+    min-height: calc(100% - 10em);
+}
+
 .bd-footer {
     padding: 1em 0;
     font-size: 70%;
     background-color: #f4f1f1;
+    height: 8em;
 }
 
 .text-muted {

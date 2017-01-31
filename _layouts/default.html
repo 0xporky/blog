@@ -4,7 +4,7 @@
 <html lang="en">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="/css/bootstrap.css" rel="stylesheet">
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/styles.css" rel="stylesheet">
   <link href="/css/whhg.css" rel="stylesheet">
   <body>
@@ -29,7 +29,9 @@
         </li>
       </ul>
     </nav>
-    {{ content }}
+    <div class="content">
+      {{ content }}
+    </div>
     <footer class="bd-footer text-muted">
       <div class="container">
         <div class="row">
@@ -43,7 +45,7 @@
                 <li class="nav-item"><a class="nav-link" href="https://twitter.com/0xporky">Twitter</a></li>
               </ul>
             </nav>
-            <p class="text-center">Для обратно связи пишыте по электронному адресу 0xporky@gmail.com</p>
+            <p class="text-center">Для обратной связи пишите по электронному адресу <a href="mailto:0xporky@gmail.com">0xporky@gmail.com</a></p>
           </div>
           <div class="col-sm-1">
           </div>
